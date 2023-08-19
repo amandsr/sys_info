@@ -23,7 +23,7 @@
      debug:
       msg: "{{ msg.split('\n') }}"
 
-   - name: OS and Kernel info
+   - name: Operating System and Kernel info
      vars:
       msg: |
        Distribution: {{ ansible_distribution }}
