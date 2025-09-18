@@ -13,7 +13,7 @@
 
   tasks:
     - name: Run the dynamic inventory script to get the data
-      command: "{{ inventory_script_path }} --list"
+      command: "python {{ inventory_script_path }} --list"
       register: script_output
       changed_when: false
 
