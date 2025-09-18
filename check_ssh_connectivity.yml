@@ -6,7 +6,9 @@
 
   vars:
     # Define a filename with a timestamp to ensure it's unique for each run
+    ftp_server_ip: "192.168.1.19" 
     report_filename: "ssh_connectivity_report_{{ ansible_date_time.iso8601 | replace(':', '-') }}.csv"
+    report_path: "/tmp/{{ report_filename }}"
 
   tasks:
     - name: Check if TCP port 22 is open on each host
@@ -40,3 +42,16 @@
       ansible.builtin.debug:
         msg: "Report successfully generated at /tmp/{{ report_filename }} on the execution node. Configure Job Artifacts to download."
       run_once: true
+
+    - name: Upload report to open FTP server
+      community.general.ftp_upload:
+        hostname: "{{ ftp_server_ip }}"
+        src: "{{ report_path }}"
+        dest: "/upload/{{ report_filename }}" # Upload into the /srv/ftp/upload directory
+      run_once: true
+
+    - name: Display final report location
+      ansible.builtin.debug:
+        msg: "Report successfully uploaded to ftp://{{ ftp_server_ip }}/upload/{{ report_filename }}"
+      run_once: true
+
