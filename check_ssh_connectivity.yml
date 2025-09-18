@@ -43,11 +43,9 @@
         msg: "Report successfully generated at /tmp/{{ report_filename }} on the execution node. Configure Job Artifacts to download."
       run_once: true
 
-    - name: Upload report to open FTP server
-      community.general.ftp_upload:
-        hostname: "{{ ftp_server_ip }}"
-        src: "{{ report_path }}"
-        dest: "/upload/{{ report_filename }}" # Upload into the /srv/ftp/upload directory
+    - name: Upload report to open FTP server using curl
+      ansible.builtin.shell:
+        cmd: "curl -T {{ report_path }} ftp://{{ ftp_server_ip }}/upload/{{ report_filename }}"
       run_once: true
 
     - name: Display final report location
