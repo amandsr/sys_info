@@ -53,23 +53,29 @@
       ansible.builtin.command:
         cmd: "awx group create --name '{{ item.key }}' --inventory '{{ awx_inventory_name }}' --wait"
       loop: "{{ inventory_data | dict2items | selectattr('key', '!=', '_meta') | list }}"
+      register: group_create_result
+      failed_when: "group_create_result.rc != 0 and 'already exists' not in group_create_result.stderr"
+      changed_when: "group_create_result.rc == 0"
       environment:
         TOWER_HOST: "{{ awx_host }}"
         TOWER_OAUTH_TOKEN: "{{ awx_token }}"
         TOWER_VERIFY_SSL: "false"
 
-    # --- STEP 2: Create all Hosts ---
+    # --- THIS TASK IS NOW IDEMPOTENT ---
     - name: Create or update all hosts using awx-cli
       ansible.builtin.command:
         cmd: "awx host create --name '{{ item.key }}' --inventory '{{ awx_inventory_name }}' --variables '{{ item.value | to_json }}' --wait"
       loop: "{{ inventory_data._meta.hostvars | dict2items }}"
       loop_control:
         label: "{{ item.key }}"
+      register: host_create_result
+      failed_when: "host_create_result.rc != 0 and 'already exists' not in host_create_result.stderr"
+      changed_when: "host_create_result.rc == 0"
       environment:
         TOWER_HOST: "{{ awx_host }}"
         TOWER_OAUTH_TOKEN: "{{ awx_token }}"
         TOWER_VERIFY_SSL: "false"
-
+        
     # --- STEP 3: Associate Hosts with their Groups ---
     - name: Associate hosts with their correct groups
       ansible.builtin.command:
