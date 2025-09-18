@@ -1,8 +1,12 @@
 ---
-- name: Check SSH Port Connectivity
+- name: Check SSH Port and Generate CSV Report
   hosts: localhost
   connection: local
   gather_facts: false
+
+  vars:
+    # Define a filename with a timestamp to ensure it's unique for each run
+    report_filename: "ssh_connectivity_report_{{ ansible_date_time.iso8601 | replace(':', '-') }}.csv"
 
   tasks:
     - name: Check if TCP port 22 is open on each host
@@ -17,9 +21,22 @@
       loop_control:
         loop_var: item
 
-    - name: Display SSH connectivity report
-      debug:
-        msg: "Host {{ item.item }} ---> SSH Port (22) is {% if not item.failed %}OPEN and LISTENING{% else %}CLOSED or UNREACHABLE{% endif %}"
-      loop: "{{ ssh_results.results }}"
-      loop_control:
-        loop_var: item
+    - name: Assemble CSV content
+      ansible.builtin.set_fact:
+        csv_content: |
+          hostname,status
+          {% for item in ssh_results.results %}
+          {{ item.item }},{{ 'SUCCESS' if not item.failed else 'FAILURE' }}
+          {% endfor %}
+      run_once: true
+
+    - name: Save CSV report to a file
+      ansible.builtin.copy:
+        content: "{{ csv_content }}"
+        dest: "/tmp/{{ report_filename }}"
+      run_once: true
+      
+    - name: Display report file location
+      ansible.builtin.debug:
+        msg: "Report successfully generated at /tmp/{{ report_filename }} on the execution node. Configure Job Artifacts to download."
+      run_once: true
