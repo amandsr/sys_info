@@ -1,0 +1,25 @@
+---
+- name: Check SSH Port Connectivity
+  hosts: localhost
+  connection: local
+  gather_facts: false
+
+  tasks:
+    - name: Check if TCP port 22 is open on each host
+      ansible.builtin.wait_for:
+        host: "{{ hostvars[item]['ansible_host'] | default(item) }}"
+        port: 22
+        timeout: 5
+        delay: 0
+      loop: "{{ groups['all'] }}"
+      register: ssh_results
+      ignore_errors: true
+      loop_control:
+        loop_var: item
+
+    - name: Display SSH connectivity report
+      debug:
+        msg: "Host {{ item.item }} ---> SSH Port (22) is {% if not item.failed %}OPEN and LISTENING{% else %}CLOSED or UNREACHABLE{% endif %}"
+      loop: "{{ ssh_results.results }}"
+      loop_control:
+        loop_var: item
