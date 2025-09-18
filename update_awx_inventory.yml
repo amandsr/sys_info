@@ -12,6 +12,16 @@
     inventory_script_path: "./excel_inventory.py" # Path to your dynamic inventory script
 
   tasks:
+    - name: Check if a key collection (awx.awx) is already installed
+      ansible.builtin.stat:
+        path: "~/.ansible/collections/ansible_collections/awx/awx"
+      register: awx_collection_check
+
+    - name: Install required Ansible collections if missing
+      ansible.builtin.command:
+        cmd: "ansible-galaxy collection install awx.awx ansible.netcommon community.general"
+      when: not awx_collection_check.stat.exists
+      changed_when: true # This ensures the task reports a change when it runs
     - name: Ensure Python dependencies (pandas, openpyxl) are installed
       ansible.builtin.pip:
         name:
