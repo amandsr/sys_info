@@ -22,8 +22,6 @@
 
     - name: Show the project directory structure
       command: ls -laR
-      args:
-        chdir: "{{ ansible_playbook_dir }}"
       register: file_listing
 
     - name: Display the file list
