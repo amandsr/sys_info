@@ -1,6 +1,6 @@
 ---
 - name: Check Host Connectivity Without Credentials
-  hosts: hosts
+  hosts: localhost
   connection: local
   gather_facts: false
 
