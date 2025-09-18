@@ -6,7 +6,7 @@
 
   # --- CONFIGURATION: UPDATE THESE VARIABLES ---
   vars:
-    awx_host: "https://192.168.1.47:81"
+    awx_host: "http://192.168.1.47:81"
     awx_token: "0g7S62u6jIQ5mxMUeZhI84wRIXBGEJ"
     awx_inventory_name: "static_inv" # The name of the AWX inventory you want to update
     inventory_script_path: "./excel_inventory.py" # Path to your dynamic inventory script
