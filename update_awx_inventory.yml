@@ -28,7 +28,7 @@
           - pandas
           - openpyxl
           - xlrd
-          - awx-cli
+          - awxkit
         state: present
 
     - name: Show the project directory structure
