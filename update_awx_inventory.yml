@@ -19,6 +19,16 @@
           - openpyxl
           - xlrd
         state: present
+
+    - name: Show the project directory structure
+      command: ls -laR
+      args:
+        chdir: "{{ ansible_playbook_dir }}"
+      register: file_listing
+
+    - name: Display the file list
+      debug:
+        var: file_listing.stdout_lines
         
     - name: Run the dynamic inventory script to get the data
       command: "python {{ inventory_script_path }} --list"
