@@ -37,7 +37,7 @@
         controller_oauthtoken: "{{ awx_token }}"
         validate_certs: false # Set to true if you have valid SSL certs
         state: present
-      loop: "{{ inventory_data | dict2items | selectattr('key', '!=', '_meta') }}"
+      loop: "{{ inventory_data | dict2items | selectattr('key', '!=', '_meta') | list }}"
 
     - name: Create or Update hosts and associate them with their groups
       awx.awx.host:
