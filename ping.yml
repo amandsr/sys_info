@@ -1,0 +1,21 @@
+---
+- name: Check Host Connectivity Without Credentials
+  hosts: localhost
+  connection: local
+  gather_facts: false
+
+  tasks:
+    - name: Ping each inventory host
+      command: "ping -c 3 {{ hostvars[item]['ansible_host'] | default(item) }}"
+      loop: "{{ query('inventory_hostnames', 'all') }}"
+      register: ping_results
+      ignore_errors: true
+      loop_control:
+        loop_var: item
+
+    - name: Display connectivity report
+      debug:
+        msg: "Host {{ item.item }} is {% if item.rc == 0 %}REACHABLE{% else %}UNREACHABLE{% endif %}"
+      loop: "{{ ping_results.results }}"
+      loop_control:
+        loop_var: item
