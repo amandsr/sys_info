@@ -28,6 +28,7 @@
           - pandas
           - openpyxl
           - xlrd
+          - awx-cli
         state: present
 
     - name: Show the project directory structure
@@ -72,18 +73,14 @@
     # --- STEP 3: Associate Hosts with their Groups ---
     - name: Associate hosts with their correct groups
       ansible.builtin.command:
-        cmd: "awx host associate --host '{{ host_item }}' --group '{{ item.key }}'"
-      loop: "{{ inventory_data | dict2items | selectattr('key', '!=', '_meta') | list }}"
+        cmd: "awx host associate --host '{{ item.1 }}' --group '{{ item.0.key }}'"
+      loop: "{{ (inventory_data | dict2items | selectattr('key', '!=', '_meta') | list) | subelements('value.hosts') }}"
       loop_control:
-        loop_var: item # The current group (e.g., {key: 'web', value: {hosts: [...]}})
-      vars:
-        host_list: "{{ item.value.hosts }}"
-      include_tasks:
-        apply:
-          loop: "{{ host_list }}"
-          loop_control:
-            loop_var: host_item # The current host name (e.g., 'web-server-01')
+        label: "Associating host '{{ item.1 }}' with group '{{ item.0.key }}'"
       environment:
+        TOWER_HOST: "{{ awx_host }}"
+        TOWER_OAUTH_TOKEN: "{{ awx_token }}"
+        TOWER_VERIFY_SSL: "false"
         TOWER_HOST: "{{ awx_host }}"
         TOWER_OAUTH_TOKEN: "{{ awx_token }}"
         TOWER_VERIFY_SSL: "false"
