@@ -17,6 +17,7 @@
         name:
           - pandas
           - openpyxl
+          - xlrd
         state: present
         
     - name: Run the dynamic inventory script to get the data
