@@ -12,6 +12,13 @@
     inventory_script_path: "./excel_inventory.py" # Path to your dynamic inventory script
 
   tasks:
+    - name: Ensure Python dependencies (pandas, openpyxl) are installed
+      ansible.builtin.pip:
+        name:
+          - pandas
+          - openpyxl
+        state: present
+        
     - name: Run the dynamic inventory script to get the data
       command: "python {{ inventory_script_path }} --list"
       register: script_output
