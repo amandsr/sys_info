@@ -47,6 +47,7 @@
       set_fact:
         inventory_data: "{{ script_output.stdout | from_json }}"
 
+    # --- STEP 1: Create all Groups ---
     - name: Create or update all groups using awx-cli
       ansible.builtin.command:
         cmd: "awx group create --name '{{ item.key }}' --inventory '{{ awx_inventory_name }}' --wait"
@@ -56,6 +57,7 @@
         TOWER_OAUTH_TOKEN: "{{ awx_token }}"
         TOWER_VERIFY_SSL: "false"
 
+    # --- STEP 2: Create all Hosts ---
     - name: Create or update all hosts using awx-cli
       ansible.builtin.command:
         cmd: "awx host create --name '{{ item.key }}' --inventory '{{ awx_inventory_name }}' --variables '{{ item.value | to_json | string | quote }}' --wait"
@@ -67,6 +69,7 @@
         TOWER_OAUTH_TOKEN: "{{ awx_token }}"
         TOWER_VERIFY_SSL: "false"
 
+    # --- STEP 3: Associate Hosts with their Groups ---
     - name: Associate hosts with their correct groups
       ansible.builtin.command:
         cmd: "awx host associate --host '{{ host_item }}' --group '{{ item.key }}'"
