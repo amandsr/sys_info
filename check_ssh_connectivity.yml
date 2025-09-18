@@ -2,7 +2,7 @@
 - name: Check SSH Port and Generate CSV Report
   hosts: localhost
   connection: local
-  gather_facts: false
+  gather_facts: true
 
   vars:
     # Define a filename with a timestamp to ensure it's unique for each run
