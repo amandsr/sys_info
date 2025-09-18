@@ -79,7 +79,7 @@
     # --- STEP 3: Associate Hosts with their Groups ---
     - name: Associate hosts with their correct groups
       ansible.builtin.command:
-        cmd: "awx groups associate --host '{{ item.1 }}' --group '{{ item.0.key }}'"
+        cmd: "awx groups modify '{{ item.0.key }}' --inventory '{{ awx_inventory_name }}' --add_hosts '{{ item.1 }}'"
       loop: "{{ (inventory_data | dict2items | selectattr('key', '!=', '_meta') | list) | subelements('value.hosts') }}"
       loop_control:
         label: "Associating host '{{ item.1 }}' with group '{{ item.0.key }}'"
