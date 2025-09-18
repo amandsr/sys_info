@@ -1,0 +1,46 @@
+---
+- name: Sync Excel Inventory to a Static AWX Inventory
+  hosts: localhost
+  connection: local
+  gather_facts: false
+
+  # --- CONFIGURATION: UPDATE THESE VARIABLES ---
+  vars:
+    awx_host: "https://192.168.1.47:81"
+    awx_token: "0g7S62u6jIQ5mxMUeZhI84wRIXBGEJ"
+    awx_inventory_name: "static_inv" # The name of the AWX inventory you want to update
+    inventory_script_path: "./excel_inventory.py" # Path to your dynamic inventory script
+
+  tasks:
+    - name: Run the dynamic inventory script to get the data
+      command: "{{ inventory_script_path }} --list"
+      register: script_output
+      changed_when: false
+
+    - name: Parse the JSON output from the script
+      set_fact:
+        inventory_data: "{{ script_output.stdout | from_json }}"
+
+    - name: Ensure all groups from the Excel sheet exist in AWX
+      awx.awx.group:
+        name: "{{ item.key }}"
+        inventory: "{{ awx_inventory_name }}"
+        controller_host: "{{ awx_host }}"
+        controller_oauthtoken: "{{ awx_token }}"
+        validate_certs: false # Set to true if you have valid SSL certs
+        state: present
+      loop: "{{ inventory_data | dict2items | selectattr('key', '!=', '_meta') }}"
+
+    - name: Create or Update hosts and associate them with their groups
+      awx.awx.host:
+        name: "{{ item.key }}"
+        inventory: "{{ awx_inventory_name }}"
+        variables: "{{ item.value | to_nice_yaml }}"
+        groups: "{{ inventory_data | dict2items | selectattr('key', '!=', '_meta') | selectattr('value.hosts', 'contains', item.key) | map(attribute='key') | list }}"
+        controller_host: "{{ awx_host }}"
+        controller_oauthtoken: "{{ awx_token }}"
+        validate_certs: false
+        state: present
+      loop: "{{ inventory_data._meta.hostvars | dict2items }}"
+      loop_control:
+        label: "{{ item.key }}"
