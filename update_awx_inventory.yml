@@ -61,7 +61,7 @@
     # --- STEP 2: Create all Hosts ---
     - name: Create or update all hosts using awx-cli
       ansible.builtin.command:
-        cmd: "awx host create --name '{{ item.key }}' --inventory '{{ awx_inventory_name }}' --variables '{{ item.value | to_json | string | quote }}' --wait"
+        cmd: "awx host create --name '{{ item.key }}' --inventory '{{ awx_inventory_name }}' --variables '{{ item.value | to_json }}' --wait"
       loop: "{{ inventory_data._meta.hostvars | dict2items }}"
       loop_control:
         label: "{{ item.key }}"
