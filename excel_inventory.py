@@ -24,7 +24,8 @@ def main():
 
     try:
         # Read the Excel file into a pandas DataFrame
-        df = pd.read_excel(excel_file)
+        #df = pd.read_excel(excel_file)
+        df = pd.read_excel(excel_file, engine='openpyxl')
     except FileNotFoundError:
         print(json.dumps({"_error": f"Excel file '{excel_file}' not found."}, indent=4))
         sys.exit(1)
