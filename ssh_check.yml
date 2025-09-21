@@ -41,4 +41,4 @@
           Total: {{ combined_results | length }},
           Success: {{ success_count }},
           Failure: {{ failure_count }}.
-          Report generated at /tmp/{{ report_filename }}
+          #Report generated at /tmp/{{ report_filename }}
