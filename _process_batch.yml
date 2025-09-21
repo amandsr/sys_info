@@ -1,0 +1,31 @@
+---
+# This file contains the tasks to process ONE batch of hosts.
+# It inherits variables from the main playbook, including 'host_batch'.
+
+- name: "Launch parallel checks for current batch"
+  ansible.builtin.wait_for:
+    host: "{{ hostvars[item]['ansible_host'] | default(item) }}"
+    port: 22
+    timeout: 5
+  loop: "{{ host_batch }}"
+  async: 600
+  poll: 0
+  register: async_batch_jobs
+  ignore_errors: true
+  loop_control:
+    loop_var: item
+
+- name: "Gather results for current batch"
+  ansible.builtin.async_status:
+    jid: "{{ item.ansible_job_id }}"
+  loop: "{{ async_batch_jobs.results }}"
+  register: batch_results
+  until: item.finished
+  retries: 200
+  delay: 3
+  loop_control:
+    loop_var: item
+
+- name: "Append batch results to combined list"
+  ansible.builtin.set_fact:
+    combined_results: "{{ combined_results + batch_results.results }}"
