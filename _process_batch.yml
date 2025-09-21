@@ -2,6 +2,10 @@
 # This file contains the tasks to process ONE batch of hosts.
 # It inherits variables from the main playbook, including 'host_batch'.
 
+- name: "Announce start of batch processing"
+  ansible.builtin.debug:
+    msg: "Starting to process batch: {{ host_batch }}"
+
 - name: "Launch parallel checks for current batch"
   ansible.builtin.wait_for:
     host: "{{ hostvars[item]['ansible_host'] | default(item) }}"
