@@ -53,3 +53,21 @@
         msg: "Report successfully uploaded to ftp://{{ ftp_server_ip }}/upload/{{ report_filename }}"
       run_once: true
 
+    # --- NEW TASK TO CALCULATE COUNTS ---
+    - name: "Calculate success and failure counts"
+      ansible.builtin.set_fact:
+        success_count: "{{ (ssh_results.results | reject('failed') | list) | length }}"
+        failure_count: "{{ (ssh_results.results | select('failed') | list) | length }}"
+      run_once: true
+
+    # --- MODIFIED TASK TO DISPLAY SUMMARY AND REPORT LOCATION ---
+    - name: "Display summary and report location"
+      ansible.builtin.debug:
+        msg: >
+          ✅ Check complete.
+          Total: {{ ssh_results.results | length }},
+          Success: {{ success_count }},
+          Failure: {{ failure_count }}.
+          Report generated at /tmp/{{ report_filename }}.
+      run_once: true
+
