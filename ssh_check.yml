@@ -19,7 +19,7 @@
       loop: "{{ (groups['all'] | batch(batch_size)) | list }}"
       loop_control:
         loop_var: host_batch
-        label: "Batch {{ loop.index }} of {{ (groups['all']|length / batch_size)|round(0, 'ceil')|int }}"
+       # label: "Batch {{ loop.index }} of {{ (groups['all']|length / batch_size)|round(0, 'ceil')|int }}"
 
     # --- FINAL REPORTING (runs after all batches are complete) ---
    # - name: "Assemble CSV content from combined results"
