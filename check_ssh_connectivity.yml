@@ -8,7 +8,9 @@
     # Define a filename with a timestamp to ensure it's unique for each run
     ftp_server_ip: "192.168.1.19" 
     report_filename: "ssh_connectivity_report_{{ ansible_date_time.iso8601 | replace(':', '-') }}.csv"
+    report_filename1: "status_report_{{ ansible_date_time.iso8601 | replace(':', '-') }}.csv"
     report_path: "/tmp/{{ report_filename }}"
+    report_path1: "/tmp/{{ report_filename1 }}"
 
   tasks:
     - name: Check if TCP port 22 is open on each host
@@ -68,11 +70,16 @@
           Total: {{ ssh_results.results | length }},
           Success: {{ success_count }},
           Failure: {{ failure_count }}.
-          Report generated at /tmp/{{ report_filename }}.
+          Report generated at /tmp/{{ report_filename1 }}.
       run_once: true
 
-    - name: Upload report to open FTP server using curl
+    - name: Upload status report to open FTP server using curl
       ansible.builtin.shell:
-        cmd: "curl -T {{ report_path }} ftp://{{ ftp_server_ip }}/upload/status.csv"
+        cmd: "curl -T {{ report_path1 }} ftp://{{ ftp_server_ip }}/upload/{{ report_filename1 }}"
+      run_once: true
+
+    - name: Display final status report location
+      ansible.builtin.debug:
+        msg: "Report successfully uploaded to ftp://{{ ftp_server_ip }}/upload/{{ report_filename1 }}"
       run_once: true
 
