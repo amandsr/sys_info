@@ -1,0 +1,76 @@
+---
+- name: Batched SSH Port Check from Control Node
+  hosts: localhost
+  connection: local
+  gather_facts: false
+
+  vars:
+    batch_size: 50
+    report_filename: "ssh_connectivity_report_{{ lookup('ansible.builtin.timestamp', '%Y-%m-%dT%H-%M-%SZ', wantlist=true)[0] }}.csv"
+
+  tasks:
+    # 1. Initialize a list to hold the results from all batches
+    - name: "Initialize list for combined results"
+      ansible.builtin.set_fact:
+        combined_results: []
+
+    # 2. Loop over the hosts in batches of 50
+    - name: "Process hosts in batches"
+      loop: "{{ groups['all'] | batch(batch_size) }}"
+      loop_control:
+        loop_var: host_batch
+        label: "Batch {{ loop.index }} of {{ (groups['all']|length / batch_size)|round(0, 'ceil')|int }}"
+
+      block:
+        # 2a. Fire off the checks for the current batch in parallel
+        - name: "Launch parallel checks for current batch"
+          ansible.builtin.wait_for:
+            host: "{{ hostvars[item]['ansible_host'] | default(item) }}"
+            port: 22
+            timeout: 5
+          loop: "{{ host_batch }}"
+          async: 600
+          poll: 0
+          register: async_batch_jobs
+          ignore_errors: true
+          loop_control:
+            loop_var: item
+
+        # 2b. Gather the results for the current batch
+        - name: "Gather results for current batch"
+          ansible.builtin.async_status:
+            jid: "{{ item.ansible_job_id }}"
+          loop: "{{ async_batch_jobs.results }}"
+          register: batch_results
+          until: item.finished
+          retries: 200
+          delay: 3
+          loop_control:
+            loop_var: item
+
+        # 2c. Append this batch's results to the main list
+        - name: "Append batch results to combined list"
+          ansible.builtin.set_fact:
+            combined_results: "{{ combined_results + batch_results.results }}"
+
+    # 3. Final Reporting (using the combined results from all batches)
+    - name: "Assemble CSV content from combined results"
+      ansible.builtin.set_fact:
+        csv_content: |
+          hostname,status
+          {% for result in combined_results %}
+          {{ result.item.item }},{{ 'SUCCESS' if not result.ansible_result.failed else 'FAILURE' }}
+          {% endfor %}
+
+    - name: "Calculate success and failure counts from combined results"
+      ansible.builtin.set_fact:
+        success_count: "{{ (combined_results | rejectattr('ansible_result', 'failed') | list) | length }}"
+        failure_count: "{{ (combined_results | selectattr('ansible_result', 'failed') | list) | length }}"
+
+    - name: "Display final summary and report location"
+      ansible.builtin.debug:
+        msg: >
+          All batches complete.
+          Total: {{ combined_results | length }},
+          Success: {{ success_count }},
+          Failure: {{ failure_count }}.
