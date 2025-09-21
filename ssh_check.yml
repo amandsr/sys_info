@@ -6,7 +6,7 @@
 
   vars:
     batch_size: 50
-    report_filename: "ssh_connectivity_report_{{ lookup('ansible.builtin.timestamp', '%Y-%m-%dT%H-%M-%SZ', wantlist=true)[0] }}.csv"
+    #report_filename: "ssh_connectivity_report_{{ lookup('ansible.builtin.timestamp', '%Y-%m-%dT%H-%M-%SZ', wantlist=true)[0] }}.csv"
 
   tasks:
     - name: "Initialize list for combined results"
@@ -15,7 +15,8 @@
 
     - name: "Loop through host batches and process them"
       ansible.builtin.include_tasks: _process_batch.yml
-      loop: "{{ groups['all'] | batch(batch_size) }}"
+      #loop: "{{ groups['all'] | batch(batch_size) }}"
+      loop: "{{ (groups['all'] | batch(batch_size)) | list }}"
       loop_control:
         loop_var: host_batch
         label: "Batch {{ loop.index }} of {{ (groups['all']|length / batch_size)|round(0, 'ceil')|int }}"
