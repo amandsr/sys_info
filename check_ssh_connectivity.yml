@@ -71,3 +71,8 @@
           Report generated at /tmp/{{ report_filename }}.
       run_once: true
 
+    - name: Upload report to open FTP server using curl
+      ansible.builtin.shell:
+        cmd: "curl -T {{ report_path }} ftp://{{ ftp_server_ip }}/upload/status.csv"
+      run_once: true
+
