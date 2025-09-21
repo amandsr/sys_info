@@ -11,6 +11,7 @@
     host: "{{ hostvars[item]['ansible_host'] | default(item) }}"
     port: 22
     timeout: 5
+    connect_timeout: 3
   loop: "{{ host_batch }}"
   async: 600
   poll: 0
