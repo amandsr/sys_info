@@ -6,8 +6,8 @@ import os
 
 # Configuration
 TARGET_ACCOUNTS = [
-    '123456789012',
-    '987654321098'  # Replace with your account IDs
+    '578353650211',
+    '154574709862'  # Replace with your account IDs
 ]
 REGIONS = ['us-east-1', 'us-west-2']  # Replace with your regions
 ROLE_NAME = 'AnsibleEC2ReadOnlyRole'
