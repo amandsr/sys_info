@@ -1,0 +1,34 @@
+---
+# This file should be at the root of your project repository.
+inventories:
+  - name: "AWS Multi-Cloud Inventory" # This name will be used for the inventory in AWX
+    description: "Hosts from AWS accounts A and B"
+    sources:
+      # Source 1: Assumes role in Account A (578353650211)
+      - name: "Account A EC2 Instances"
+        source: amazon.aws.aws_ec2 # Use the aws_ec2 inventory plugin
+        source_vars:
+          plugin: amazon.aws.aws_ec2
+          # This is the key: tells boto to use the named profile
+          boto_profile: "account_a_role" 
+          regions:
+            - "us-east-1"
+          # Optional: Filter instances based on tags, etc.
+          filters:
+            instance-state-name: running
+          # Optional: Compose variables from instance data
+          compose:
+            ansible_host: private_ip_address
+
+      # Source 2: Assumes role in Account B (154574709862)
+      - name: "Account B EC2 Instances"
+        source: amazon.aws.aws_ec2
+        source_vars:
+          plugin: amazon.aws.aws_ec2
+          boto_profile: "account_b_role"
+          regions:
+            - "us-east-1"
+          filters:
+            instance-state-name: running
+          compose:
+            ansible_host: public_ip_address
