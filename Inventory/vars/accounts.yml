@@ -1,0 +1,7 @@
+# vars/accounts.yml
+---
+# A simple list of AWS accounts to scan for EC2 instances.
+aws_account_ids:
+  - "578353650211"
+  - "154574709862"
+  # Add new account IDs here in the future
