@@ -1,0 +1,31 @@
+# inventory.yml
+---
+plugin: amazon.aws.aws_ec2
+# This line dynamically loads the variables from your accounts file.
+vars_files:
+  - 'vars/accounts.yml'
+
+# The rest of the configuration now uses the variable loaded from the file.
+iam_role_arn: >-
+  {%- for account_id in aws_account_ids -%}
+  arn:aws:iam::{{ account_id }}:role/ec2_assume
+  {%- if not loop.last %},{% endif -%}
+  {%- endfor %}
+
+# This disables the default 'aws_ec2' group
+use_aws_ec2_instance_id: false
+
+# Specify the regions to scan.
+regions:
+  - "us-east-1"
+  - "ap-south-1"
+
+# Define how to group the hosts.
+keyed_groups:
+  - key: tags.AccountAlias
+    prefix: ""
+    separator: ""
+
+# Define the connection hostname.
+compose:
+  ansible_host: private_ip_address
