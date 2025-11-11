@@ -1,0 +1,31 @@
+---
+- name: Configure Rocky 8 Server
+  # IMPORTANT: Change 'rocky_servers' to your target host group from your inventory
+  hosts: all
+  become: yes  # This runs all tasks with root privileges (e.g., using sudo)
+  gather_facts: yes
+
+  tasks:
+    - name: 1. Set the system hostname
+      ansible.builtin.hostname:
+        # IMPORTANT: Change this value to your desired hostname
+        name: rocky-ftp-server
+        
+    - name: 2. Install the vsftpd package
+      ansible.builtin.dnf:
+        name: vsftpd
+        state: present
+
+    - name: 3. Start and enable the vsftpd service
+      ansible.builtin.systemd:
+        name: vsftpd
+        state: started
+        enabled: yes
+
+    - name: 4. Create the user 'bumper'
+      ansible.builtin.user:
+        name: bumper
+        comment: "Bumper system user"
+        shell: /bin/bash  # Specify a login shell
+        create_home: yes    # Create the user's home directory
+        state: present
